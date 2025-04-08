@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Cleanup{% endblock %}
+
+{% block head_scripts %}
+    <script>
+        alert("{{ directory_to_remove }} temporary files deleted.");
+        window.location.href = "/";
+    </script>
+{% endblock %}

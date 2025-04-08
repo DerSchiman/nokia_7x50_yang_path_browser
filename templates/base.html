@@ -1,0 +1,17 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}YANG Path Browser{% endblock %}</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+    pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
+  </style>
+  {% block head_scripts %}{% endblock %}
+</head>
+<body>
+  <h1>YANG Path Browser</h1>
+  {% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+
+# Flattened files and logs
+flat/
+*.log
+*.db
+
+# Large YANG model folders
+nokia*YangModels*/
+7x50_YangModels/
+
+# Ignore state dumps
