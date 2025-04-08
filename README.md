@@ -27,8 +27,8 @@
 ### 1. Clone and set up Python environment
 
 ```bash
-git clone sros_yang_path_browser
-cd sros_yang_path_browser
+git clone https://github.com/DerSchiman/nokia_7x50_yang_path_browser.git
+cd nokia_7x50_yang_path_browser
 
 # Create a virtual environment
 python3 -m venv venv
