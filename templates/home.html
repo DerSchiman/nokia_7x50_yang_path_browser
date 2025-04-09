@@ -1,73 +1,41 @@
 {% extends "base.html" %}
-
-{% block title %}Home - YANG Path Browser{% endblock %}
-
-{% block head_scripts %}
-<script>
-  function showLoading() {
-    document.getElementById('loading-indicator').style.display = 'block';
-  }
-  function toggleSection() {
-    const section = document.getElementById('load-section');
-    const toggleBtn = document.getElementById('toggle-btn');
-    const isHidden = section.style.display === 'none';
-    section.style.display = isHidden ? 'block' : 'none';
-    toggleBtn.innerText = isHidden ? '🔽 Collapse Loader Section' : '▶ Expand Loader Section';
-  }
-  window.onload = function() {
-    const isLoaded = {{ is_loaded|lower }};
-    if (isLoaded) {
-      document.getElementById("load-section").style.display = "none";
-      document.getElementById("toggle-btn").innerText = "▶ Expand Loader Section";
-    }
-  }
-</script>
-{% endblock %}
+{% block title %}YANG Path Browser{% endblock %}
 
 {% block content %}
-<button id="toggle-btn" onclick="toggleSection()" style="padding: 6px 12px; font-size: 14px; margin-bottom: 10px;">🔽 Collapse Loader Section</button>
+<h2>📘 YANG Path Search</h2>
 
-<div id="load-section" style="display:none;">
-  <h2>1. Load Nokia YANG Directory</h2>
-  <form action="/load" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-    <label for="yang_path">YANG root path:</label><br>
-    <label>Select YANG Folder:</label><br>
-    <input type="file" name="yang_folder" webkitdirectory directory multiple onchange="document.getElementById('yang_path').value = this.files[0].webkitRelativePath.split('/')[0]"><br><br>
-    <input type="text" id="yang_path" name="yang_path" size="80" placeholder="/path/to/nokia/YANG/folder">
-    <input type="submit" value="Load and Flatten">
-  </form>
-  <div id="loading-indicator" style="display:none; color:green; font-weight:bold;">Flattening in progress, please wait...</div>
-  <h3>🧹 Maintenance</h3>
-  <form action="/cleanup" method="post" onsubmit="return confirm('Are you sure you want to delete all temporary files?');">
-    <input type="submit" value="Delete All Uploaded Files and Flattened Output" style="color:red;font-weight:bold;">
-  </form>
-</div>
-{% if flattening_summary %}
-<h3>Flattening Complete</h3>
-<p>YANG files loaded and flattened:</p>
-<ul>
-  {% for key in ['state', 'conf'] %}
-  <li><a href="/flat/{{ flattening_summary[key ~ '_file'] }}" download>{{ flattening_summary[key ~ '_file'] }}</a> — {{ flattening_summary[key] }} paths</li>
-  <li><a href="/flat/{{ flattening_summary[key ~ '_pyang'] }}" download>{{ flattening_summary[key ~ '_pyang'] }}</a></li>
-  {% endfor %}
-</ul>
-{% endif %}
+<form method="get" action="/">
+  <label for="release"><strong>📦 Choose Software Release:</strong></label>
+  <select name="release" id="release" onchange="this.form.submit()">
+    {% for folder in release_folders %}
+      {% set status = release_load_status.get(folder, "pending") %}
+      {% set label = folder + (" (loading...)" if status != "ok" else "") %}
+      <option value="{{ folder }}" {% if selected_release == folder %}selected{% endif %}>
+        {{ label }}
+      </option>
+    {% endfor %}
+  </select>  
+  <br><br>
 
-<h2>2. Search Flattened Paths</h2>
-
-{% if loaded_model_path %}
-  <p><strong>📁 Loaded Folder:</strong> <code>{{ loaded_model_path }}</code></p>
-{% endif %}
-
-<form action="/" method="get">
-  <label for="model">Model:</label>
-  <select name="model">
-    <option value="state" {% if model == "state" %}selected{% endif %}>nokia-state</option>
-    <option value="conf" {% if model == "conf" %}selected{% endif %}>nokia-conf</option>
+  <label for="model"><strong>🧱 Model Type:</strong></label>
+  <select name="model" id="model">
+    <option value="state" {% if model == 'state' %}selected{% endif %}>state</option>
+    <option value="conf" {% if model == 'conf' %}selected{% endif %}>conf</option>
   </select>
-  <input type="text" name="q" value="{{ q }}" placeholder="Search keyword (e.g. sap-id)" size="40">
-  <input type="submit" value="Search">
+
+  <label for="q"><strong>🔍 Search Path:</strong></label>
+  <input type="text" name="q" id="q" value="{{ q }}" placeholder="e.g. system/memory-pools">
+  <button type="submit">Search</button>
 </form>
 
+{% if is_loaded %}
+  <p><small>Loaded Release: <strong>{{ selected_release }}</strong></small></p>
+{% elif selected_release %}
+  <p style="color:red;"><strong>⚠️ The release "{{ selected_release }}" is still loading. Please wait...</strong></p>
+{% endif %}
+
+<hr>
+
 {{ result_html|safe }}
+
 {% endblock %}

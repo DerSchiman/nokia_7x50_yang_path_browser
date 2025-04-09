@@ -1,4 +1,3 @@
-
 # 🧭 YANG Path Browser
 
 **YANG Path Browser** is a developer tool to explore and test **YANG paths** from Nokia SR OS models. It provides metadata for any path (leaf, list, container), and generates example **gNMI** commands ready for use in network testing tools like **Robot Framework**. For SR-Linux the official yang path browser can be found here: [https://yang.srlinux.dev/](https://yang.srlinux.dev/)
@@ -10,17 +9,20 @@
 ## ✨ Features
 
 - 🔍 **Interactive path search** and metadata inspection  
-- 📂 **Drag-and-drop folder upload** of Nokia's full YANG models  
+- 📂 **Auto-processing** of all local YANG releases in `7x50_YangModels/`  
 - ⚠️ **Partial match detection** with closest node fallback  
 - 🧩 **Type classification**: container, list, leaf  
 - 🔧 **Auto gNMI command preview**  
+- 🔁 **Lazy loading** and background model preprocessing  
 - 🧠 **Persistent auto-reload** of last loaded model (fast startup)
+- 📊 **Release status tracking** (`/status` endpoint and visual indicator)
 
 ---
 
 <img src="screenshots/search.png" alt="YANG Path Browser Screenshot" width="50%" height="50%">
-
 <img src="screenshots/info.png" alt="YANG Path Details Screenshot" width="50%" height="50%">
+
+---
 
 ## ⚙️ Setup (with `venv`)
 
@@ -44,19 +46,16 @@ pip install -r requirements.txt
 uvicorn path_browser:app --reload
 ```
 
-🧠 This is the recommended way to run FastAPI in development.
-
 📡 Open in browser: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
 ## 📥 Where to Get Nokia YANG Models
 
-All public Nokia SR OS YANG models are here:
-
+All public Nokia SR OS YANG models are here:  
 🔗 https://github.com/nokia/7x50_YangModels
 
-To download a specific folder (e.g. `latest_sros_22.10`) without cloning the full repo:
+To download a specific release (e.g. `latest_sros_22.10`) without cloning the full repo:
 
 1. Go to:  
    https://download-directory.github.io/
@@ -66,42 +65,39 @@ To download a specific folder (e.g. `latest_sros_22.10`) without cloning the ful
    https://github.com/nokia/7x50_YangModels/tree/master/latest_sros_22.10
    ```
 
-3. Download and unzip the folder.
-
----
+3. Download and unzip the folder into `7x50_YangModels/`
 
 ---
 
 ## 🚀 How to Use the Tool
 
-### 🧳 Upload a Model Folder
+### 🧳 Load Model Folders
 
-1. Start the tool
-2. Open the web UI at http://127.0.0.1:8000
-3. Upload the folder you downloaded (`latest_sros_22.10`)
-4. The tool will process and flatten the YANG models
+1. Place downloaded folders into the `7x50_YangModels/` directory  
+2. Start the tool  
+3. Open the web UI at [http://127.0.0.1:8000](http://127.0.0.1:8000)  
+4. All releases will be preprocessed automatically in the background  
 
-🗂 It expects:
+🗂 Expected input structure:
+
 ```
-nokia-combined/nokia-state.yang
-nokia-combined/nokia-conf.yang
+nokia-combined/nokia-state.yang  
+nokia-combined/nokia-conf.yang  
 ```
-
----
 
 ### 🔍 Search & Inspect Paths
 
-- Use the **search bar** to find nodes (e.g. `sap-egress`)
-- Results link to full metadata:
-  - **Type**: container / list / leaf
-  - **Description**
-  - **Base YANG type**
-  - **List keys**
-  - **gNMI example command**
+- Use the **search bar** to find nodes (e.g. `sap-egress`)  
+- Click on a result to view:
+  - 📦 Path
+  - 📄 Description
+  - 📐 Type (leaf/list/container)
+  - 🔑 Keys (for lists)
+  - 🔧 gNMI example
 
 ---
 
-### 💡 gNMI Command Preview
+## 💡 gNMI Command Preview
 
 For each YANG node, the tool auto-generates a CLI example:
 
@@ -110,8 +106,6 @@ gnmic get --path /state/qos/sap-egress[sap-egress-policy-name=example]
 ```
 
 🧠 You can copy this directly into gNMI automation or adapt it for config testing.
-
----
 
 ---
 
@@ -127,9 +121,9 @@ If you write tests in Robot Framework using gNMI `Get` or `Set`, it's essential 
 
 ---
 
-## 🧪 CLI Mode for Devs
+## 🧪 Dev CLI (flattening only)
 
-To only generate flattened path files:
+To only generate flattened path files from a given release folder:
 
 ```bash
 python path_browser.py --yang-dir /your/model/folder
@@ -139,23 +133,26 @@ python path_browser.py --yang-dir /your/model/folder
 
 ## 🧼 Cleanup
 
-To delete all temp files and restart from scratch:
+To delete all generated `.yin` and `.txt` files and restart fresh:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/cleanup
 ```
 
-Or use the **"Cleanup"** button in the UI.
+---
+
+## 🔧 REST API Endpoints
+
+- `GET /` — Web UI  
+- `GET /yang_details?path=...&release=...` — Get metadata  
+- `GET /status` — JSON status of model loading  
 
 ---
 
-## **Creating Robot Framework Test Cases**
+## 🧠 Credits
 
-You can use the YANG Path Browser tool to help construct Robot Framework test cases that utilize gNMI for testing network routers.
-
-For instance, when dealing with a list in a YANG model (e.g., `/state/system/cpu[sample-period=60]`), you may need to index the list to get a specific entry, as shown in the Robot test case in the keyword section where `Get From List` is used to extract a particular entry from the list.
-
-### **Why Data Type Matters**
-
-The data type (container, list, or leaf) returned from gNMI commands determines how you parse and handle it in Robot Framework. For lists, you might need to index into the list, while for containers, you may need to navigate through nested dictionaries.
-
+Built by [@DerSchiman](https://github.com/DerSchiman) using:
+- Python / FastAPI
+- Jinja2
+- `pyang`
+- Nokia SR OS YANG Models

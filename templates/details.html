@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Details - YANG Path Browser{% endblock %}
+
 {% block content %}
 <h2>🧩 YANG Details for <code>{{ path }}</code></h2>
 
@@ -7,17 +8,20 @@
 <div class="alert alert-warning">
   ⚠ <strong>Partial match:</strong> The full path <code>{{ path }}</code> couldn't be fully resolved.<br>
   Showing details for the closest valid YANG node: <code>{{ resolved_path }}</code>.<br>
-  <small>Some YANG models include logical groupings like <code>choice</code> or <code>case</code> that do not appear in parsed output.</small>
+  <small>Some models include intermediate groupings like <code>choice</code> or <code>case</code> that do not appear in parsed output.</small>
 </div>
 {% endif %}
 
 <p><strong>🔹 Type:</strong> {{ element_kind }}</p>
 <p><strong>📖 Description:</strong><br><em>{{ description }}</em></p>
 <p><strong>🔸 YANG Base Type:</strong> {{ type_text }}</p>
+
 {% if key_text %}
-  <p><strong>🔑 List Key:</strong> {{ key_text }}</p>
+<p><strong>🔑 List Key:</strong> <code>{{ key_text }}</code></p>
 {% endif %}
 
 <h3>🔧 Example gNMI Command</h3>
 <pre>{{ gnmi_example }}</pre>
+
+<p><a href="/">← Back to search</a></p>
 {% endblock %}
